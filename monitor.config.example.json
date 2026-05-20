@@ -1,0 +1,94 @@
+{
+  "watchlist": ["BTCUSD", "ETHUSD", "SOLUSD"],
+  "defaultTimeframe": "60",
+  "interval": 60,
+
+  "notifications": {
+    "console": {
+      "enabled": true
+    },
+    "telegram": {
+      "enabled": false,
+      "botToken": "your-telegram-bot-token",
+      "chatId": "your-chat-id"
+    },
+    "webhook": {
+      "enabled": false,
+      "url": "https://your-webhook-url",
+      "method": "POST",
+      "headers": {}
+    },
+    "email": {
+      "enabled": false,
+      "smtpHost": "smtp.example.com",
+      "smtpPort": 587,
+      "smtpUser": "user@example.com",
+      "smtpPass": "password",
+      "from": "monitor@example.com",
+      "to": "your-email@example.com"
+    },
+    "dingtalk": {
+      "enabled": false,
+      "webhookUrl": "https://oapi.dingtalk.com/robot/send?access_token=your-token",
+      "secret": "your-sign-secret"
+    }
+  },
+
+  "priceAlerts": {
+    "BTCUSD": [
+      {
+        "type": "above",
+        "price": 100000,
+        "cooldown": 300000
+      },
+      {
+        "type": "below",
+        "price": 80000,
+        "cooldown": 300000
+      },
+      {
+        "type": "cross_above",
+        "price": 95000,
+        "cooldown": 600000
+      },
+      {
+        "type": "cross_below",
+        "price": 85000,
+        "cooldown": 600000
+      }
+    ],
+    "ETHUSD": [
+      {
+        "type": "above",
+        "price": 3500,
+        "cooldown": 300000
+      },
+      {
+        "type": "below",
+        "price": 2800,
+        "cooldown": 300000
+      }
+    ]
+  },
+
+  "indicatorAlerts": {
+    "BTCUSD": [
+      {
+        "name": "rsi-overbought",
+        "indicator": "Relative Strength Index",
+        "field": "RSI",
+        "condition": "above",
+        "threshold": 70,
+        "cooldown": 300000
+      },
+      {
+        "name": "rsi-oversold",
+        "indicator": "Relative Strength Index",
+        "field": "RSI",
+        "condition": "below",
+        "threshold": 30,
+        "cooldown": 300000
+      }
+    ]
+  }
+}
