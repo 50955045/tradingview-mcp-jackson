@@ -15,7 +15,8 @@ let notifier = null;
 let config = null;
 let state = {
   lastAlerts: {},
-  indicatorHistory: {}
+  indicatorHistory: {},
+  pineDrawingsHistory: {}
 };
 
 function loadConfig() {
@@ -46,6 +47,186 @@ function getIndicatorValue(studyValues, indicatorName, fieldName) {
   const study = studyValues.find(s => s.name.toLowerCase().includes(indicatorName.toLowerCase()));
   if (!study) return undefined;
   return study.values[fieldName];
+}
+
+async function checkPineLabelAlerts(symbol) {
+  const alerts = config.pineLabelAlerts?.[symbol] || [];
+  const notifications = [];
+
+  try {
+    const result = await data.getPineLabels({});
+    if (!result?.studies) return notifications;
+
+    for (const alert of alerts) {
+      const alertKey = `${symbol}-pine-label-${alert.name}`;
+      const now = Date.now();
+      const cooldown = alert.cooldown || 300000;
+
+      if (state.lastAlerts[alertKey] && now - state.lastAlerts[alertKey] < cooldown) {
+        continue;
+      }
+
+      const study = result.studies.find(s => s.name.toLowerCase().includes(alert.indicator.toLowerCase()));
+      if (!study || !study.labels) continue;
+
+      for (const label of study.labels) {
+        let match = false;
+        if (alert.contains) {
+          match = label.text && label.text.toLowerCase().includes(alert.contains.toLowerCase());
+        }
+        if (alert.equals) {
+          match = label.text === alert.equals;
+        }
+        if (alert.regex) {
+          const regex = new RegExp(alert.regex);
+          match = regex.test(label.text);
+        }
+        if (alert.priceAbove) {
+          match = label.price != null && label.price >= alert.priceAbove;
+        }
+        if (alert.priceBelow) {
+          match = label.price != null && label.price <= alert.priceBelow;
+        }
+
+        if (match) {
+          notifications.push({
+            message: `🏷️ [${symbol}] 指标 \"${study.name}\" 发现标签: \"${label.text}\" ${label.price != null ? `@ ${label.price}` : ''}`
+          });
+          state.lastAlerts[alertKey] = now;
+          break;
+        }
+      }
+    }
+  } catch (e) {
+    console.warn(`Failed to check pine labels for ${symbol}:`, e.message);
+  }
+
+  return notifications;
+}
+
+async function checkPineLineAlerts(symbol) {
+  const alerts = config.pineLineAlerts?.[symbol] || [];
+  const notifications = [];
+
+  try {
+    const result = await data.getPineLines({ verbose: true });
+    if (!result?.studies) return notifications;
+
+    for (const alert of alerts) {
+      const alertKey = `${symbol}-pine-line-${alert.name}`;
+      const now = Date.now();
+      const cooldown = alert.cooldown || 300000;
+
+      if (state.lastAlerts[alertKey] && now - state.lastAlerts[alertKey] < cooldown) {
+        continue;
+      }
+
+      const study = result.studies.find(s => s.name.toLowerCase().includes(alert.indicator.toLowerCase()));
+      if (!study || !study.all_lines) continue;
+
+      const historyKey = `${alertKey}-levels`;
+      const previousLevels = state.pineDrawingsHistory[historyKey] || [];
+      const currentLevels = study.horizontal_levels || [];
+
+      for (const level of currentLevels) {
+        if (!previousLevels.includes(level)) {
+          notifications.push({
+            message: `📏 [${symbol}] 指标 \"${study.name}\" 新画水平线: ${level}`
+          });
+          state.lastAlerts[alertKey] = now;
+        }
+      }
+
+      state.pineDrawingsHistory[historyKey] = [...currentLevels];
+    }
+  } catch (e) {
+    console.warn(`Failed to check pine lines for ${symbol}:`, e.message);
+  }
+
+  return notifications;
+}
+
+async function checkPineBoxAlerts(symbol) {
+  const alerts = config.pineBoxAlerts?.[symbol] || [];
+  const notifications = [];
+
+  try {
+    const result = await data.getPineBoxes({ verbose: true });
+    if (!result?.studies) return notifications;
+
+    for (const alert of alerts) {
+      const alertKey = `${symbol}-pine-box-${alert.name}`;
+      const now = Date.now();
+      const cooldown = alert.cooldown || 300000;
+
+      if (state.lastAlerts[alertKey] && now - state.lastAlerts[alertKey] < cooldown) {
+        continue;
+      }
+
+      const study = result.studies.find(s => s.name.toLowerCase().includes(alert.indicator.toLowerCase()));
+      if (!study || !study.zones) continue;
+
+      const historyKey = `${alertKey}-zones`;
+      const previousZones = state.pineDrawingsHistory[historyKey] || [];
+      const currentZones = study.zones.map(z => `${z.high}:${z.low}`);
+
+      for (let i = 0; i < study.zones.length; i++) {
+        const zone = study.zones[i];
+        const zoneKey = `${zone.high}:${zone.low}`;
+        if (!previousZones.includes(zoneKey)) {
+          notifications.push({
+            message: `📦 [${symbol}] 指标 \"${study.name}\" 新画箱体: ${zone.low} - ${zone.high}`
+          });
+          state.lastAlerts[alertKey] = now;
+        }
+      }
+
+      state.pineDrawingsHistory[historyKey] = [...currentZones];
+    }
+  } catch (e) {
+    console.warn(`Failed to check pine boxes for ${symbol}:`, e.message);
+  }
+
+  return notifications;
+}
+
+async function checkPineTableAlerts(symbol) {
+  const alerts = config.pineTableAlerts?.[symbol] || [];
+  const notifications = [];
+
+  try {
+    const result = await data.getPineTables({});
+    if (!result?.studies) return notifications;
+
+    for (const alert of alerts) {
+      const alertKey = `${symbol}-pine-table-${alert.name}`;
+      const now = Date.now();
+      const cooldown = alert.cooldown || 300000;
+
+      if (state.lastAlerts[alertKey] && now - state.lastAlerts[alertKey] < cooldown) {
+        continue;
+      }
+
+      const study = result.studies.find(s => s.name.toLowerCase().includes(alert.indicator.toLowerCase()));
+      if (!study || !study.tables) continue;
+
+      for (const table of study.tables) {
+        for (const row of table.rows) {
+          if (alert.contains && row.toLowerCase().includes(alert.contains.toLowerCase())) {
+            notifications.push({
+              message: `📋 [${symbol}] 指标 \"${study.name}\" 表格内容匹配: \"${row}\"`
+            });
+            state.lastAlerts[alertKey] = now;
+            break;
+          }
+        }
+      }
+    }
+  } catch (e) {
+    console.warn(`Failed to check pine tables for ${symbol}:`, e.message);
+  }
+
+  return notifications;
 }
 
 async function checkSingleIndicatorAlert(symbol, alert, studyValues) {
@@ -298,6 +479,18 @@ async function monitorOnce() {
 
       const indicatorNotifications = await checkIndicatorAlerts(symbol);
       notifications.push(...indicatorNotifications);
+
+      const pineLabelNotifications = await checkPineLabelAlerts(symbol);
+      notifications.push(...pineLabelNotifications);
+
+      const pineLineNotifications = await checkPineLineAlerts(symbol);
+      notifications.push(...pineLineNotifications);
+
+      const pineBoxNotifications = await checkPineBoxAlerts(symbol);
+      notifications.push(...pineBoxNotifications);
+
+      const pineTableNotifications = await checkPineTableAlerts(symbol);
+      notifications.push(...pineTableNotifications);
 
     } catch (e) {
       console.warn(`Failed to monitor ${symbol}:`, e.message);

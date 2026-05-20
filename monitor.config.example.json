@@ -173,5 +173,65 @@
         "cooldown": 600000
       }
     ]
+  },
+
+  "pineLabelAlerts": {
+    "BTCUSD": [
+      {
+        "name": "my-strategy-buy",
+        "indicator": "My Custom Strategy",
+        "contains": "BUY",
+        "cooldown": 300000
+      },
+      {
+        "name": "my-strategy-sell",
+        "indicator": "My Custom Strategy",
+        "equals": "SELL",
+        "cooldown": 300000
+      },
+      {
+        "name": "signal-text",
+        "indicator": "My Custom Strategy",
+        "regex": "(LONG|SHORT|ENTRY)",
+        "cooldown": 300000
+      },
+      {
+        "name": "high-price-label",
+        "indicator": "My Custom Strategy",
+        "priceAbove": 100000,
+        "cooldown": 600000
+      }
+    ]
+  },
+
+  "pineLineAlerts": {
+    "BTCUSD": [
+      {
+        "name": "new-support-resistance",
+        "indicator": "My Custom Strategy",
+        "cooldown": 600000
+      }
+    ]
+  },
+
+  "pineBoxAlerts": {
+    "BTCUSD": [
+      {
+        "name": "new-trading-zone",
+        "indicator": "My Custom Strategy",
+        "cooldown": 600000
+      }
+    ]
+  },
+
+  "pineTableAlerts": {
+    "BTCUSD": [
+      {
+        "name": "table-alert",
+        "indicator": "My Custom Strategy",
+        "contains": "ALERT",
+        "cooldown": 300000
+      }
+    ]
   }
 }
