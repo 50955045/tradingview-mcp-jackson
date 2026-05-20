@@ -34,43 +34,6 @@
     }
   },
 
-  "priceAlerts": {
-    "BTCUSD": [
-      {
-        "type": "above",
-        "price": 100000,
-        "cooldown": 300000
-      },
-      {
-        "type": "below",
-        "price": 80000,
-        "cooldown": 300000
-      },
-      {
-        "type": "cross_above",
-        "price": 95000,
-        "cooldown": 600000
-      },
-      {
-        "type": "cross_below",
-        "price": 85000,
-        "cooldown": 600000
-      }
-    ],
-    "ETHUSD": [
-      {
-        "type": "above",
-        "price": 3500,
-        "cooldown": 300000
-      },
-      {
-        "type": "below",
-        "price": 2800,
-        "cooldown": 300000
-      }
-    ]
-  },
-
   "indicatorAlerts": {
     "BTCUSD": [
       {
@@ -88,6 +51,126 @@
         "condition": "below",
         "threshold": 30,
         "cooldown": 300000
+      },
+      {
+        "name": "rsi-rising",
+        "indicator": "Relative Strength Index",
+        "field": "RSI",
+        "condition": "rising",
+        "cooldown": 60000
+      },
+      {
+        "name": "macd-between",
+        "indicator": "MACD",
+        "field": "MACD",
+        "condition": "between",
+        "min": -0.5,
+        "max": 0.5,
+        "cooldown": 300000
+      }
+    ],
+    "ETHUSD": [
+      {
+        "name": "rsi-cross-50-up",
+        "indicator": "Relative Strength Index",
+        "field": "RSI",
+        "condition": "cross_above",
+        "threshold": 50,
+        "cooldown": 300000
+      },
+      {
+        "name": "rsi-cross-50-down",
+        "indicator": "Relative Strength Index",
+        "field": "RSI",
+        "condition": "cross_below",
+        "threshold": 50,
+        "cooldown": 300000
+      }
+    ]
+  },
+
+  "crossIndicatorAlerts": {
+    "BTCUSD": [
+      {
+        "name": "macd-golden-cross",
+        "indicator1": "MACD",
+        "field1": "MACD",
+        "indicator2": "MACD",
+        "field2": "Signal",
+        "condition": "cross_above",
+        "cooldown": 600000
+      },
+      {
+        "name": "macd-death-cross",
+        "indicator1": "MACD",
+        "field1": "MACD",
+        "indicator2": "MACD",
+        "field2": "Signal",
+        "condition": "cross_below",
+        "cooldown": 600000
+      },
+      {
+        "name": "price-above-ema20",
+        "indicator1": "Moving Average Exponential",
+        "field1": "EMA",
+        "indicator2": "Moving Average Exponential",
+        "field2": "EMA",
+        "condition": "above",
+        "cooldown": 300000
+      }
+    ],
+    "ETHUSD": [
+      {
+        "name": "ema5-above-ema20",
+        "indicator1": "Moving Average Exponential",
+        "field1": "EMA",
+        "indicator2": "Moving Average Exponential",
+        "field2": "EMA",
+        "condition": "cross_above",
+        "cooldown": 600000
+      }
+    ]
+  },
+
+  "multiConditionAlerts": {
+    "BTCUSD": [
+      {
+        "name": "bullish-setup",
+        "logic": "all",
+        "conditions": [
+          {
+            "indicator": "Relative Strength Index",
+            "field": "RSI",
+            "condition": "above",
+            "threshold": 50
+          },
+          {
+            "indicator": "MACD",
+            "field": "Histogram",
+            "condition": "above",
+            "threshold": 0
+          }
+        ],
+        "cooldown": 600000
+      },
+      {
+        "name": "oversold-with-volume",
+        "logic": "any",
+        "conditions": [
+          {
+            "indicator": "Relative Strength Index",
+            "field": "RSI",
+            "condition": "below",
+            "threshold": 25
+          },
+          {
+            "indicator": "Stochastic",
+            "field": "%K",
+            "condition": "below",
+            "threshold": 20
+          }
+        ],
+        "cooldown": 600000
       }
     ]
   }
